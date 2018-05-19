@@ -108,13 +108,17 @@ def add_doc2vec_features(models, use_subject, df):
         models_by_name['Doc2VecD100W3'] = models_by_name.pop('Doc2Vec(dbow,d100,n5,mc2,s0.001,t'+str(config.CORES)+') window:3')
 
     # now add it to the dataframe
+    all_feats_dfs = []
     for name, train_model in models_by_name.items():
         print("Adding features for " + name)
         features_to_add = get_features(train_model)
         features_to_add.columns = [name+".feature."+str(x) for x in features_to_add.columns]
-        df = pd.merge(df, features_to_add, left_on='post_id',right_index=True)
-    print("Current shape:" + str(df.shape))
-    return df
+        #df = pd.merge(df, features_to_add, left_on='post_id',right_index=True)
+        all_feats_dfs.append(features_to_add)
+    #print("Current shape:" + str(df.shape))
+    doc2vec_feats = pd.concat(all_feats_dfs, axis=1)
+    #return df
+    return doc2vec_feats
 
 
 def main():
@@ -142,7 +146,8 @@ def main():
     #    model.build_vocab(corpus)
     # model.train(corpus, total_examples=model.corpus_count, epochs=model.iter)
 
-    df = add_doc2vec_features(models, use_subject=False, df=df)
+    #df = add_doc2vec_features(models, use_subject=False, df=df)
+    feats1 = add_doc2vec_features(models, use_subject=False, df=df)
  
     models = [
         # best found after tests: test_many_doc2vec_models.ipynb
@@ -150,11 +155,14 @@ def main():
         Doc2Vec(dm=0, size=100, window=3, min_count=2, workers=config.CORES)
         ]
 
-    df = add_doc2vec_features(models, use_subject=True, df=df)
-
-    doc2vec_location = os.path.join(config.DATA_DIR, 'interim', 'processed_features_plus_doc2vec.csv')
+    #df = add_doc2vec_features(models, use_subject=True, df=df)
+    feats2 = add_doc2vec_features(models, use_subject=True, df=df)
+    all_doc2vec_feats = pd.concat([feats1, feats2], axis=1)
+    all_doc2vec_feats.index.name = 'post_id'
+    doc2vec_location = os.path.join(config.DATA_DIR, 'interim', 'doc2vec_features.csv')
     print('-- Writing data to ' + doc2vec_location + ' -- ')
-    df.to_csv(doc2vec_location, index=False)
+    #df.to_csv(doc2vec_location, index=False)
+    all_doc2vec_feats.to_csv(doc2vec_location)
     print('-- Done -- ')
 
 
