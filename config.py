@@ -4,6 +4,9 @@ import platform
 if platform.node() == 'RES-C02RF0T2.local': #example of using a computer specific path
     DATA_DIR = "/Users/lfrench/Downloads/testseate/clp2017_release/data/"
     CORES = 2
+elif platform.node() == 'RES-C02TQ1V6G8WL.local': # using dereks comp
+    DATA_DIR = "/Users/derek_howard/projects/CLP_shared_task_code/data"
+    CORES = 6
 else: #using working directory as per setup in the readme file
     cwd = os.getcwd()
     DATA_DIR = os.path.join(cwd, "data")
