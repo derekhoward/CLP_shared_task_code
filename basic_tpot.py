@@ -67,11 +67,15 @@ start_time = str(round(time.time()))
 models_base_folder = pathlib.Path.cwd() / 'models'
 tpot_base_folder = models_base_folder / 'best_tpot'
 tpot_name = 'tpot_exported_pipeline.' + target_label + '.feats.' + feats + '.time.' + start_time + '.basic_tpot.py'
+run_log = 'run_' + tpot_name
 full_tpot_out_filename = tpot_base_folder / tpot_name
 
+#generate a folder to write out tpot scripts that are run
+runscripts_dir = models_base_folder / 'run_scripts' 
+runscripts_dir.mkdir(exist_ok=True, parents=True)
 
-print("TPOT code written to:", full_tpot_out_filename)
-copyfile(os.path.realpath(__file__), full_tpot_out_filename)
+print("TPOT code written to:", runscripts_dir / run_log)
+copyfile(os.path.realpath(__file__), runscripts_dir / run_log)
 
 
 if platform == "darwin": #multithreading fails on osx for tpot due to some BLAS thing
@@ -91,7 +95,7 @@ if target_label == 'linear_label':
     config_dict = 'TPOT light'
 
 #now using the slimmed file 
-df = pandas.read_csv(os.path.join(config.DATA_DIR,'interim', 'final_features_slim.csv'), low_memory=False)
+df = pandas.read_csv(os.path.join(config.DATA_DIR,'interim', 'all_features_slim.csv'), low_memory=False)
 
     
 
@@ -138,10 +142,9 @@ gc.collect()
 
 
 #kf = model_selection.KFold(n_splits=cv_folds, random_state=random_state, shuffle=True)
-
 # stratified CV:
 #kf = model_selection.StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=random_state)
-kf = model_selection.RepeatedStratifiedKFold(n_splits=cv_folds, repeats=10, random_state=random_state)
+kf = model_selection.RepeatedStratifiedKFold(n_splits=cv_folds, n_repeats=10, random_state=random_state)
 
 
 #generate a folder to write checkpoint models
