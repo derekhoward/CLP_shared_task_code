@@ -154,6 +154,7 @@ def vader_polarity(text):
 
     
 def create_empath_cats(text):
+    lexicon = Empath()
     try:
         cat_scores = lexicon.analyze(text, normalize=True)
     except Exception as e:
@@ -284,5 +285,4 @@ def main():
 
 if __name__ == "__main__":
     vader = SentimentIntensityAnalyzer()
-    lexicon = Empath()
     main()
