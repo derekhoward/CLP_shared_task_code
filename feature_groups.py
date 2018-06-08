@@ -37,13 +37,20 @@ LDA_COLS = {x for x in list(df.columns) if x.startswith("LDA")}
 BOARD_COLS = {x for x in list(df.columns) if "board_1hot_" in x}
 AUTHOR_RANK_COLS = {x for x in list(df.columns) if "author_rank_1hot_" in x}
 
-OPENAI_SENTIMENT_COLS = {x for x in list(df.columns) if "openAI_" in x}
+OPENAI_SENTIMENT_COLS = {x for x in list(df.columns) if x.startswith("openAI_")}
+
+SENTOPENAI_SENTIMENT_COLS = {x for x in list(df.columns) if x.startswith("sent_openAI_")}
 
 DEEPMOJI_COLS = {x for x in list(df.columns) if "deepmoji_" in x}
-#WHOLE_DEEPMOJI_COLS = {x for x in list(df.columns) if ("deepmoji_" "sent") in x}
+
+#sentence level deepmoji encoded as length 64 vector
+EMOJI_COLS = {x for x in list(df.columns) if "emoji_" in x}
 
 UNIVERSAL_COLS = {x for x in list(df.columns) if "universal_" in x}
 
+SENTVADER_COLS = {x for x in list(df.columns) if x.startswith("sentvader")}
+
+SENTEMPATH_COLS = {x for x in list(df.columns) if x.startswith("sentempath")}
 #Free text columns
 NON_NUMERIC_COLS = {'subject', 'cleaned_body', 'images', 'board', 'author_rank', 'post_time'}
 
