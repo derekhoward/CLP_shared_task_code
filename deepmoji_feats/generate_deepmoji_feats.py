@@ -40,22 +40,40 @@ def main():
 
     tokenized, _, _ = st.tokenize_sentences(sentences)
 
+    # generate full deepmoji features for sentences
     print('Loading model from {}.'.format(PRETRAINED_PATH))
     model = deepmoji_feature_encoding(maxlen, PRETRAINED_PATH)
     model.summary()
 
-    print('Encoding texts..')
+    print('Encoding texts with deepmoji features...')
     encoding = model.predict(tokenized)
 
-    encodings = pd.DataFrame(encoding)
-    encodings = pd.concat([df, encodings], axis=1)
+    deepmoji_encodings = pd.DataFrame(encoding)
+    deepmoji_encodings.index = df.post_id
+    
+    deepmoji_post_scores = deepmoji_encodings.groupby('post_id').agg(['mean', 'max', 'min'])
+    deepmoji_post_scores = flatten_cols(deepmoji_post_scores)
+    deepmoji_post_scores = deepmoji_post_scores.add_prefix('deepmoji_')
+    
+    # generate 64 emoji encodings
+    print('Loading model from {}.'.format(PRETRAINED_PATH))
+    model = deepmoji_emojis(maxlen, PRETRAINED_PATH)
+    model.summary()
 
-    aggregated = encodings.drop(['sentence_num', 'body'], axis=1).groupby('post_id').agg(['mean', 'max', 'min'])
-    final = flatten_cols(aggregated)
-    deepmoji_feats = pd.DataFrame(final.to_records())
-    deepmoji_feats = deepmoji_feats.add_prefix('deepmoji_')
-
-    deepmoji_feats.to_csv('../data/interim/deepmoji_features.csv', index=None)
+    print('Running emoji predictions...')
+    prob = model.predict(tokenized)
+    emoji_scores = pd.DataFrame(prob)
+    emoji_scores = emoji_scores.add_prefix('emoji_')
+    emoji_scores.index = df.post_id
+    
+    emoji_post_scores = emoji_scores.groupby('post_id').agg(['mean', 'max', 'min'])
+    emoji_post_scores = flatten_cols(emoji_post_scores)
+    
+    print('deepmoji features shape: {}'.format(deepmoji_post_scores.shape))
+    print('emoji features shape: {}'.format(emoji_post_scores.shape))
+    total_feats = deepmoji_post_scores.merge(emoji_post_scores, left_index=True, right_index=True)
+    print('total features shape: {}'.format(total_feats.shape))
+    total_feats.to_csv('../data/interim/all_sent_level_deepmoji.csv')
 
 if __name__ == "__main__":
     main()
